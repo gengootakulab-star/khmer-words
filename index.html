@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>クメール語 単語分解 | 言語オタクの多言語学習ラボ</title>
+<meta name="description" content="クメール語の単語を、子音・足(コーン)・母音記号に分けて、a系列・o系列と読みの目安を調べるツールです。">
+<link rel="icon" type="image/png" href="https://gengootakulab-star.github.io/icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+Khmer&display=swap">
+<style>
+:root{--bg:#F4F0E7;--fg:#20364A;--sub:#77766F;--card:#fff;--line:#E6D6CB;--ac:#A6533D;--ca:#F0D5CA;--co:#D5DFE8;--s:#D2E3E1;--v:#DCE4D0;--t:#E4D6DE;--f:#EFE0BE;--a:#E6E2DA;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#16212C;--fg:#ECE8DF;--sub:#A3A8A8;--card:#1F2D3A;--line:#33465A;--ac:#E08A6E;--ca:#5A3A30;--co:#2C4258;--s:#2B4745;--v:#34452F;--t:#4A3547;--f:#5A4C2C;--a:#3A3D40}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Noto Sans JP",-apple-system,"Hiragino Sans",sans-serif;line-height:1.6}
+main{max-width:640px;margin:0 auto;padding:16px 16px 80px}
+.back{font-size:13px;margin:0 0 4px}.back a,a{color:var(--ac)}.back a{text-decoration:none}
+h1{font-size:22px;margin:4px 0 12px}
+.km{font-family:"Noto Sans Khmer","Khmer OS","Khmer Sangam MN",sans-serif}
+.ipa{font-family:"Noto Sans","Segoe UI","Gentium Plus",serif;color:var(--ac)}
+.row{display:flex;gap:8px}
+input{flex:1;min-width:0;font-size:22px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
+button{font:inherit;font-size:15px;padding:10px 16px;border:0;border-radius:10px;background:var(--ac);color:#fff;cursor:pointer}
+.ex{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 6px}
+.ex button{background:var(--card);color:var(--fg);border:1px solid var(--line);padding:6px 10px;font-size:18px}
+.hint{font-size:12px;color:var(--sub);margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+.card h2{font-size:14px;color:var(--sub);margin:0 0 8px;font-weight:600}
+.big{font-size:30px}
+.syl{padding:10px 0;border-top:1px solid var(--line)}.syl:first-of-type{border-top:0}
+.sh{cursor:pointer;display:inline-block}
+.chars{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ch{border-radius:8px;padding:4px 8px;text-align:center;min-width:56px;cursor:pointer}
+.ch b{display:block;font-size:26px;font-weight:400;line-height:1.7}
+.ch i{display:block;font-style:normal;font-size:10px;color:var(--sub)}
+.ch u{display:block;text-decoration:none;font-size:12px;color:var(--ac)}
+.ca{background:var(--ca)}.co{background:var(--co)}.s{background:var(--s)}.v{background:var(--v)}.t{background:var(--t)}.f{background:var(--f)}.a{background:var(--a)}
+.legend{font-size:12px;color:var(--sub)}.legend span{border-radius:6px;padding:1px 6px;margin-right:4px;color:var(--fg)}
+.warn{font-size:12px;color:var(--sub);margin-top:12px}
+#bd{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none}
+#sh{position:fixed;left:0;right:0;bottom:0;max-height:65vh;overflow:auto;background:var(--card);border-top:1px solid var(--line);border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:none;box-shadow:0 -4px 20px rgba(0,0,0,.2)}
+#sh .tt{font-size:38px;line-height:1.5}#sh .ss{font-size:13px;color:var(--sub)}#sh .pp{font-size:20px;margin:4px 0}#sh .bb{margin-top:8px;font-size:15px}
+#sh button{margin-top:12px;background:var(--line);color:var(--fg);width:100%}
+</style>
+</head>
+<body>
+<main>
+<p class="back"><a href="/">← 言語オタクの多言語学習ラボ</a></p>
+<h1>クメール語 単語分解</h1>
+<div class="row"><input id="q" class="km" placeholder="例: ខ្មែរ" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="go">分解</button></div>
+<div class="ex km" id="ex"></div>
+<p class="hint">色のついたブロックや、文字のまとまりをタップすると、詳しい説明が出ます。</p>
+<div id="out"></div>
+<p class="warn">子音・足(コーン)・母音記号などの役割と、読みの目安を示します。単語の意味は、まだ表示しません。読みは規則から作った目安(IPA)で、実際の発音や、音節の区切りとは違うことがあります。足の子音があるまとまりでは、母音の系列が例外的に変わることがあります(例: ម្ដាយ は /mdaːj/ と読みます)。クメール語は、単語の間に空白を入れません。1語ずつ入力してください。<br>間違いを見つけたら <a id="rp" href="#" target="_blank" rel="noopener">GitHubで報告する</a>(アカウントが必要です)、または <a id="rf" href="#" target="_blank" rel="noopener">フォームで報告する</a>。<br>このページでは、閲覧数をCookieなしで集計しています(GoatCounter)。</p>
+</main>
+<div id="bd"></div>
+<div id="sh"><div class="ss" id="s1"></div><div class="tt km" id="s2"></div><div class="pp ipa" id="s3"></div><div class="bb" id="s4"></div><button id="x">閉じる</button></div>
+<script data-goatcounter="https://dream.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>
+const EX=['ខ្មែរ','ភាសា','កម្ពុជា','សៀវភៅ','ប្រទេស','សួស្តី','ទៅ','គោ'];
+const P='パーリ語・サンスクリット語由来の借用語に多い文字。';
+const C={'ក':['a','k'],'ខ':['a','kʰ'],'គ':['o','k'],'ឃ':['o','kʰ'],'ង':['o','ŋ'],'ច':['a','c'],'ឆ':['a','cʰ'],'ជ':['o','c'],'ឈ':['o','cʰ'],'ញ':['o','ɲ'],'ដ':['a','ɗ'],'ឋ':['a','tʰ'],'ឌ':['o','ɗ'],'ឍ':['o','tʰ'],'ណ':['o','n'],'ត':['a','t'],'ថ':['a','tʰ'],'ទ':['o','t'],'ធ':['o','tʰ'],'ន':['o','n'],'ប':['a','ɓ'],'ផ':['a','pʰ'],'ព':['o','p'],'ភ':['o','pʰ'],'ម':['o','m'],'យ':['o','j'],'រ':['o','r'],'ល':['o','l'],'វ':['o','ʋ'],'ស':['a','s'],'ហ':['a','h'],'ឡ':['a','l'],'អ':['a','ʔ']};
+const ROM={'k':'「カ」の子音。息を出さない(無気音)。','kʰ':'息を強く吐く「カ」(有気音)。','ŋ':'鼻にかけた「ンガ」。語頭にも来る。','c':'舌の中ほどを上あごにつける「チャ」に近い音。息は出さない。','cʰ':'息を強く吐く「チャ」(有気音)。','ɲ':'「ニャ」の子音。','ɗ':'のどを下げて出す「ダ」(内破音)。日本語のダに近い。','tʰ':'息を強く吐く「タ」(有気音)。','t':'息を出さない「タ」。','n':'「ナ」行の子音。','ɓ':'のどを下げて出す「バ」(内破音)。日本語のバに近い。','pʰ':'息を強く吐く「パ」(有気音)。','p':'息を出さない「パ」。','m':'「マ」行の子音。','j':'「ヤ」行の子音。','r':'舌を軽く震わせる(はじく)「ラ」。','l':'舌先を上の歯茎につける「ラ」。','ʋ':'「ヴ」と「ワ」の中間のような音。','s':'「サ」行の子音。','h':'「ハ」行の子音。','ʔ':'声門閉鎖音。のどを一瞬閉じてから母音を出す。'};
+const FIN={'ក':'k','ខ':'k','គ':'k','ឃ':'k','ង':'ŋ','ច':'t','ជ':'t','ឆ':'t','ឈ':'t','ដ':'t','ឋ':'t','ឌ':'t','ឍ':'t','ត':'t','ថ':'t','ទ':'t','ធ':'t','ញ':'n','ន':'n','ណ':'n','ប':'p','ផ':'p','ព':'p','ភ':'p','ម':'m','យ':'j','វ':'w','ល':'l','ស':'h','ហ':'h','រ':'-'};
+const V={'ា':['aː','iə'],'ិ':['e','i'],'ី':['əj','iː'],'ឹ':['ə','ɨ'],'ឺ':['əɨ','ɨː'],'ុ':['o','u'],'ូ':['ou','uː'],'ួ':['uə','uə'],'ើ':['aə','əː'],'ឿ':['ɨə','ɨə'],'ៀ':['iə','iə'],'េ':['eː','eː'],'ែ':['aɛ','ɛː'],'ៃ':['aj','ɨj'],'ោ':['ao','oː'],'ៅ':['aw','ɨw']};
+const MARK={'\u17D2':['コーン(足)','次の子音を、下に小さく重ねた形(足)にする記号。子音が連続する音(例: ខ្ម の khm)をつくる。'],'\u17C9':['ムーサクトアン','o系列の子音を、a系列の読みに変える記号。'],'\u17CA':['トリーサップ','a系列の子音を、o系列の読みに変える記号。'],'\u17CB':['ボンタック','直前の母音を短くする記号。'],'\u17C6':['ニッカヒット','語末を「m」の鼻音にする記号(例: ាំ → am)。'],'\u17C7':['ロアハムーク','語末に息の「h」を添える記号。'],'\u17C8':['ヨーキア','語末に息の「h」を添える記号(ះ に近い)。'],'\u17CC':['ロバット','古い綴りに残る記号。ふつう読まれない。'],'\u17CD':['トアンダーキアット','その文字を読まないことを示す記号。'],'\u17D0':['サムヨーク・サンニャ','語末のまとまりを示す記号。'],'\u17D1':['ヴィリアム','語末の記号。']};
+const isC=c=>c>=0x1780&&c<=0x17A2,isI=c=>c>=0x17A3&&c<=0x17B3,isV=c=>c>=0x17B6&&c<=0x17C5;
+const seg=s=>{const cs=[...s],out=[];let cur=[];cs.forEach((ch,i)=>{const c=ch.codePointAt(0);if((isC(c)||isI(c))&&cs[i-1]!=='\u17D2'&&cur.length){out.push(cur);cur=[]}cur.push(ch)});if(cur.length)out.push(cur);return out};
+function parse(cl){let ser=C[cl[0]]?C[cl[0]][0]:null,subs=[],vow=null,ext='';
+for(let i=1;i<cl.length;i++){const ch=cl[i],c=ch.codePointAt(0);
+if(ch==='\u17D2'&&cl[i+1]){subs.push(cl[i+1]);i++}else if(ch==='\u17C9')ser='a';else if(ch==='\u17CA')ser='o';else if(isV(c))vow=ch;else if(ch==='\u17C6')ext+='m';else if(ch==='\u17C7'||ch==='\u17C8')ext+='h'}
+return{base:cl[0],ser,subs,vow,ext}}
+function reading(p){if(!C[p.base])return null;let r=C[p.base][1];p.subs.forEach(s=>{if(C[s])r+=C[s][1]});r+=p.vow?V[p.vow][p.ser==='o'?1:0]:(p.ser==='o'?'ɔ':'ɑ');return r+p.ext}
+let INFO=[];const add=o=>INFO.push(o)-1;
+const sName=s=>s==='o'?'o系列':'a系列';
+function consBody(ch,sub){const k=C[ch];let b=`<b>${sName(k[0])}</b>の子音。音は /${k[1]}/。<br><b>発音のコツ:</b> ${ROM[k[1]]}`;if(!sub)b+=`<br><b>語末にあるときの音:</b> ${FIN[ch]==='-'?'ほとんど発音されません。':'/'+FIN[ch]+'/'}`;if('ឋឌឍណ'.includes(ch)||'ឝឞ'.includes(ch))b+='<br>'+P;return b}
+function blocks(cl,p){const out=[];for(let i=0;i<cl.length;i++){const ch=cl[i],c=ch.codePointAt(0);let r,l,u='',o;
+if(i===0&&p.fin){const f=FIN[ch];r='f';l='末子音';u=f==='-'?'':'/'+f+'/';o={s:'末子音(語末)',t:ch,p:u,b:'語末にあるので、直前のまとまりの末子音として読みます。'+(f==='-'?'ほとんど発音されません。':'音は /'+f+'/ です。')}}
+else if(i===0&&C[ch]){const k=C[ch];r=k[0]==='a'?'ca':'co';l=sName(k[0])+'の子音';u='/'+k[1]+'/';o={s:l+'(頭の子音)',t:ch,p:u,b:consBody(ch)}}
+else if(i===0&&isI(c)){r='v';l='独立母音';o={s:'独立母音',t:ch,p:'',b:'単独で母音を表す文字。子音を伴わずに使います。'}}
+else if(ch==='\u17D2'){r='a';l='コーン';o={s:MARK[ch][0],t:ch,p:'',b:MARK[ch][1]}}
+else if(cl[i-1]==='\u17D2'&&C[ch]){const k=C[ch];r='s';l='足の子音';u='/'+k[1]+'/';o={s:'足の子音(コーンの後ろ)',t:ch,p:u,b:consBody(ch,1)+'<br>前の子音の下に小さく重ねて書かれます。'}}
+else if(isV(c)){const v=V[ch];r='v';l='母音記号';u='/'+v[p.ser==='o'?1:0]+'/';o={s:'母音記号',t:ch,p:u,b:`母音は、子音の系列で読みが変わります。<br>a系列の子音のとき: /${v[0]}/<br>o系列の子音のとき: /${v[1]}/<br>この文字のまとまりは<b>${sName(p.ser)}</b>なので /${v[p.ser==='o'?1:0]}/ です。`}}
+else if(MARK[ch]){r=(ch==='\u17C6'||ch==='\u17C7'||ch==='\u17C8')?'f':'t';l=MARK[ch][0];o={s:'記号の役割',t:ch,p:'',b:MARK[ch][1]}}
+else if(C[ch]){r='f';l='子音';o={s:'子音',t:ch,p:'/'+C[ch][1]+'/',b:consBody(ch)}}
+else{r='a';l='その他';o={s:l,t:ch,p:'',b:''}}
+out.push(`<div class="ch ${r}" data-i="${add(o)}"><b>${ch}</b>${u?'<u class="ipa">'+u+'</u>':''}<i>${l}</i></div>`)}return out.join('')}
+function analyze(w){const cls=seg(w);const ps=cls.map(parse),rs=ps.map(reading);const L=cls.length-1;
+if(L>0&&cls[L].length===1&&FIN[cls[L][0]]&&rs[L-1]){const f=FIN[cls[L][0]];rs[L-1]+=f==='-'?'':f;ps[L].fin=true;rs[L]=null}
+let h=`<div class="card"><h2>単語</h2><div class="big km">${w}</div><div class="ipa" style="font-size:20px">/${rs.filter(x=>x!==null).map(x=>x||'?').join('.')}/ <span class="legend">(読みの目安)</span></div><div class="legend">文字のまとまり: ${cls.length}</div></div>`;
+h+='<div class="card"><h2>文字のまとまりごとの分解</h2>'+cls.map((cl,i)=>{const p=ps[i],s=cl.join('');const q=add({s:'文字のまとまり',t:s,p:rs[i]?'/'+rs[i]+'/':'',b:`頭の子音: ${p.base}${C[p.base]?'('+sName(p.ser)+')':''}<br>足の子音: ${p.subs.join(' ')||'なし'}<br>母音記号: ${p.vow||'なし(固有母音)'}<br>※ 足の子音があるときは、母音の系列が例外的に変わることがあります。<br>※ 語末の単独の子音は、直前のまとまりの末子音として読むことがあります。`});
+return`<div class="syl"><span class="sh" data-i="${q}"><span class="km" style="font-size:22px">${s}</span> ${p.fin?'<span class="legend">(前のまとまりの末子音)</span>':`<span class="ipa">/${rs[i]||'?'}/</span> <span class="legend">${C[p.base]?sName(p.ser):''}</span>`}</span><div class="chars km">${blocks(cl,p)}</div></div>`}).join('')+
+'<div class="legend" style="margin-top:8px"><span class="ca">a系列子音</span><span class="co">o系列子音</span><span class="s">足の子音</span><span class="v">母音</span><span class="t">記号</span><span class="f">語末など</span><span class="a">コーン</span></div></div>';return h}
+const $=id=>document.getElementById(id);
+const RPB='https://github.com/gengootakulab-star/khmer-words/issues/new?template=report.yml';
+const RFB='https://docs.google.com/forms/d/e/1FAIpQLScPkiaUyqVWIROYV46vrNjukSjTbSkjNL-nu2frOm8UpZNkjQ/viewform?usp=pp_url&entry.71590650='+encodeURIComponent('クメール語 単語分解');
+function run(){INFO=[];const toks=$('q').value.split(/\s+/).map(t=>t.replace(/[^\u1780-\u17FF]/g,'')).filter(Boolean);
+$('out').innerHTML=toks.length?toks.map(analyze).join(''):'<div class="card">クメール文字で単語を入力してください。</div>';
+const t=toks[0]||'';$('rp').href=RPB+(t?'&word='+encodeURIComponent(t):'');$('rf').href=RFB+(t?'&entry.767953325='+encodeURIComponent(t):'')}
+function show(i){const o=INFO[i];if(!o)return;$('s1').textContent=o.s;$('s2').textContent=o.t;$('s3').textContent=o.p;$('s4').innerHTML=o.b;$('sh').style.display='block';$('bd').style.display='block'}
+function hide(){$('sh').style.display='none';$('bd').style.display='none'}
+$('out').addEventListener('click',e=>{const t=e.target.closest('[data-i]');if(t)show(+t.dataset.i)});
+$('bd').onclick=hide;$('x').onclick=hide;$('go').onclick=()=>{hide();run()};
+$('q').addEventListener('keydown',e=>{if(e.key==='Enter'){hide();run()}});
+EX.forEach(w=>{const b=document.createElement('button');b.textContent=w;b.onclick=()=>{$('q').value=w;hide();run()};$('ex').appendChild(b)});
+$('q').value=EX[0];run();
+</script>
+</body>
+</html>
