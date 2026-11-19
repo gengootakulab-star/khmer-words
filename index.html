@@ -130,6 +130,8 @@ function reading(p,v){if(!C[p.base])return null;let r=C[p.base][1];p.subs.forEac
 /* 語末の子音をつけた読み。k の音の文字は、特定の母音のあとで [ʔ] になる */
 const KL='កខគឃ',LAB='បផពភម',GLOT=/(?:ɑː?|aː?|iə|ɨə|uə|ĕə|ŭə)$/;
 function closed(p,prev,ch,bt){const f=FIN[ch],o=p.ser==='o',k=KL.includes(ch);
+/* ាំង は「aːm + ŋ」ではなく、a系列 /aŋ/・o系列 /ĕəŋ/ と読む */
+if(p.vow==='ា'&&p.ext==='m'&&ch==='ង'){const v=o?'ĕə':'a';return{r:reading({...p,ext:''},v)+'ŋ',end:'ŋ',v}}
 if(p.ext||prev.includes('\u17D0'))return{r:reading(p)+(f==='-'?'':f),end:f};
 let v;
 if(bt){if(!p.vow)v=o?(LAB.includes(ch)?'u':(k||ch==='ង'||'សហ'.includes(ch))?'ŭə':'ŏə'):'ɑ';
@@ -142,7 +144,7 @@ let INFO=[];const add=o=>INFO.push(o)-1;
 const sName=s=>s==='o'?'o系列':'a系列';
 function consBody(ch,sub){const k=C[ch];let b=`<b>${sName(k[0])}</b>の子音。音は /${k[1]}/。<br><b>発音のコツ:</b> ${ROM[k[1]]}`;if(!sub&&FIN[ch])b+=`<br><b>語末にあるときの音:</b> ${FIN[ch]==='-'?'ほとんど発音されません。':'/'+FIN[ch]+'/'}${KL.includes(ch)?'(直前の母音によっては /ʔ/)':''}`;if('ឋឌឍណ'.includes(ch)||'ឝឞ'.includes(ch))b+='<br>'+P;return b}
 function blocks(cl,p){const out=[];for(let i=0;i<cl.length;i++){const ch=cl[i],c=ch.codePointAt(0);let r,l,u='',o;
-if(i===0&&p.fin){const f=p.finIpa||FIN[ch];r='f';l='末子音';u=f==='-'?'':'/'+f+'/';o={s:'末子音(語末)',t:ch,p:u,b:'語末にあるので、直前のまとまりの末子音として読みます。'+(f==='-'?'ほとんど発音されません。':'音は /'+f+'/ です。')+(f==='ʔ'?'<br>k の音の文字ですが、この母音のあとでは、のどを閉じて止める音になります。':'')}}
+if(i===0&&p.fin){const f=p.finIpa||FIN[ch];r='f';l='末子音';u=f==='-'?'':'/'+f+'/';o={s:'末子音',t:ch,p:u,b:'語末や複合語の切れ目にある単独の子音なので、直前のまとまりの末子音として読みます。'+(f==='-'?'ほとんど発音されません。':'音は /'+f+'/ です。')+(f==='ʔ'?'<br>k の音の文字ですが、この母音のあとでは、のどを閉じて止める音になります。':'')}}
 else if(i===0&&C[ch]){const k=C[ch];r=k[0]==='a'?'ca':'co';l=sName(k[0])+'の子音';u='/'+k[1]+'/';o={s:l+'(頭の子音)',t:ch,p:u,b:consBody(ch)}}
 else if(i===0&&isI(c)){r='v';l='独立母音';o={s:'独立母音',t:ch,p:'',b:'単独で母音を表す文字。子音を伴わずに使います。'}}
 else if(ch==='\u17D2'){r='a';l='コーン';o={s:MARK[ch][0],t:ch,p:'',b:MARK[ch][1]}}
@@ -156,10 +158,14 @@ out.push(`<div class="ch ${r}" data-i="${add(o)}"><b>${ch}</b>${u?'<u class="ipa
 function analyze(w){const cls=seg(w);const ps=cls.map(parse),rs=ps.map(p=>reading(p));const L=cls.length-1;
 const exc=L>0&&cls[0].join('')==='អ្ន'&&cls[1].join('')==='ក';
 if(exc){rs[0]='nĕəʔ';ps[0].note='អ្នក は不規則な読みの語で、/nĕəʔ/ と読みます(先頭の អ は読みません)。';ps[1].fin=true;ps[1].finIpa='ʔ';rs[1]=null}
+/* 語の途中の末子音: そこまでが辞書にある語になるときだけ、単独の子音を前のまとまりの末子音として読む(例: ទឹក|ដោះ) */
+for(let i=1,st=exc?2:0;i<L;i++){if(i<st)continue;const cl=cls[i],b2=cl.length===2&&cl[1]==='\u17CB';
+if((cl.length===1||b2)&&FIN[cl[0]]&&rs[i-1]&&(ps[i-1].vow||b2)&&!(i+1===L&&cls[L].length===1)){const pre=cls.slice(st,i+1).map(x=>x.join('')).join('');
+if(DICT[pre]||JA[pre]){const c=closed(ps[i-1],cls[i-1],cl[0],b2);rs[i-1]=c.r;ps[i].fin=true;ps[i].finIpa=c.end;rs[i]=null;if(b2&&ps[i-1].vow&&c.v)ps[i-1].vo=c.v;st=i+1}}}
 const bt=L>0&&cls[L].length===2&&cls[L][1]==='\u17CB';
 if(L>0&&!(exc&&L===1)&&(cls[L].length===1||bt)&&FIN[cls[L][0]]&&rs[L-1]){const c=closed(ps[L-1],cls[L-1],cls[L][0],bt);rs[L-1]=c.r;ps[L].fin=true;ps[L].finIpa=c.end;rs[L]=null;if(bt&&ps[L-1].vow&&c.v)ps[L-1].vo=c.v}
 let h=`<div class="card"><h2>単語</h2><div class="big km">${w}</div><div class="ipa" style="font-size:20px">/${rs.filter(x=>x!==null).map(x=>x||'?').join('.')}/ <span class="legend">(読みの目安)</span></div><div class="legend">文字のまとまり: ${cls.length}</div></div>`;
-h+='<div class="card"><h2>文字のまとまりごとの分解</h2>'+cls.map((cl,i)=>{const p=ps[i],s=cl.join('');const q=add({s:'文字のまとまり',t:s,p:rs[i]?'/'+rs[i]+'/':'',b:`頭の子音: ${p.base}${C[p.base]?'('+sName(p.ser)+')':''}<br>足の子音: ${p.subs.join(' ')||'なし'}<br>母音記号: ${p.vow||'なし(固有母音)'}<br>※ 足の子音があるときは、母音の系列が例外的に変わることがあります。<br>※ 語末の単独の子音は、直前のまとまりの末子音として読むことがあります。${p.note?'<br>'+p.note:''}`});
+h+='<div class="card"><h2>文字のまとまりごとの分解</h2>'+cls.map((cl,i)=>{const p=ps[i],s=cl.join('');const q=add({s:'文字のまとまり',t:s,p:rs[i]?'/'+rs[i]+'/':'',b:`頭の子音: ${p.base}${C[p.base]?'('+sName(p.ser)+')':''}<br>足の子音: ${p.subs.join(' ')||'なし'}<br>母音記号: ${p.vow||'なし(固有母音)'}<br>※ 足の子音があるときは、母音の系列が例外的に変わることがあります。<br>※ 単独の子音は、語末や、複合語の切れ目では、直前のまとまりの末子音として読むことがあります。${p.note?'<br>'+p.note:''}`});
 return`<div class="syl"><span class="sh" data-i="${q}"><span class="km" style="font-size:22px">${s}</span> ${p.fin?'<span class="legend">(前のまとまりの末子音)</span>':`<span class="ipa">/${rs[i]||'?'}/</span> <span class="legend">${C[p.base]?sName(p.ser):''}</span>`}</span><div class="chars km">${blocks(cl,p)}</div></div>`}).join('')+
 '<div class="legend" style="margin-top:8px"><span class="ca">a系列子音</span><span class="co">o系列子音</span><span class="s">足の子音</span><span class="v">母音</span><span class="t">記号</span><span class="f">語末など</span><span class="a">コーン</span></div></div>';return h}
 const analyze0=analyze;analyze=w=>{const h=analyze0(w),k='<div class="card"><h2>文字のまとまりごとの分解',i=h.indexOf(k);return i<0?h+meaning(w):h.slice(0,i)+meaning(w)+h.slice(i)};
